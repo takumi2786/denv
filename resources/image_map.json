@@ -3,7 +3,7 @@
         "identity": "ubuntu",
         "image_uri": "takumi2786/ubuntu:22.04-jammy-amd64",
         "option": "-p 8080:8080",
-        "entrypoint": "",
+        "entrypoint": "zsh",
         "cmd": ""
     },
     {
