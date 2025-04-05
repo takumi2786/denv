@@ -1,14 +1,13 @@
-/*
-Copyright © 2025 NAME HERE <EMAIL ADDRESS>
-*/
+// /*
+// Copyright © 2025 NAME HERE <EMAIL ADDRESS>
+// */
 package cmd
 
 import (
 	"context"
 	"fmt"
-	"io"
 	"os"
-	"syscall"
+	"os/exec"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
@@ -17,12 +16,28 @@ import (
 	"github.com/m-mizutani/goerr"
 	"github.com/spf13/cobra"
 	"github.com/takumi2786/denv/pkg/denv"
-	"golang.org/x/term"
 )
 
 type Options struct {
 	ImageMapPath string
 	Identity     string
+}
+
+func parseCmd(cmd *cobra.Command) (*Options, error) {
+	identity, err := cmd.Flags().GetString("identity")
+	if err != nil {
+		return nil, err
+	}
+
+	filepath, err := cmd.Flags().GetString("file")
+	if err != nil {
+		return nil, err
+	}
+
+	return &Options{
+		Identity:     identity,
+		ImageMapPath: filepath,
+	}, err
 }
 
 // greetCmd represents the greet command
@@ -46,23 +61,6 @@ var runCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(runCmd)
 	runCmd.Flags().StringP("identity", "i", "ubuntu", "Docker Image identity defined in image_map.json")
-}
-
-func parseCmd(cmd *cobra.Command) (*Options, error) {
-	identity, err := cmd.Flags().GetString("identity")
-	if err != nil {
-		return nil, err
-	}
-
-	filepath, err := cmd.Flags().GetString("file")
-	if err != nil {
-		return nil, err
-	}
-
-	return &Options{
-		Identity:     identity,
-		ImageMapPath: filepath,
-	}, err
 }
 
 func run(options *Options) error {
@@ -129,46 +127,17 @@ func run(options *Options) error {
 		return err
 	}
 
-	// アタッチ
-	attachResp, err := cli.ContainerAttach(ctx, resp.ID, container.AttachOptions{
-		Stream: true,
-		Stdin:  true,
-		Stdout: true,
-		Stderr: true,
-	})
-	if err != nil {
-		return err
+	exCmd := exec.Command("docker", "exec", "-it", options.Identity, "zsh")
+
+	// 入出力を親プロセスのターミナルにバインド
+	exCmd.Stdin = os.Stdin
+	exCmd.Stdout = os.Stdout
+	exCmd.Stderr = os.Stderr
+
+	// 実行
+	if err := exCmd.Run(); err != nil {
+		fmt.Println("実行エラー:", err)
 	}
-	defer attachResp.Close()
 
-	// raw mode に入る
-	oldState, err := term.MakeRaw(int(syscall.Stdin))
-	if err != nil {
-		return err
-	}
-	defer term.Restore(int(syscall.Stdin), oldState) // 終了時に戻す
-
-	// 入出力を繋げる
-	go func() {
-		_, _ = io.Copy(attachResp.Conn, os.Stdin) // キーボード → コンテナ
-	}()
-	go func() {
-		_, _ = io.Copy(os.Stdout, attachResp.Reader) // コンテナ出力 → 画面
-		// _, _ = stdcopy.StdCopy(os.Stdout, os.Stderr, attachResp.Reader) // tty trueだとこれはダメ
-		// ttyが有効の場合、stdout/stderr は1本のストリームに multiplex されてる。stdcopy.StdCopyはこれを分離して扱うためのメソッド。
-	}()
-
-	fmt.Printf("コンテナ %s にアタッチしました（終了するには Ctrl+D)\n", resp.ID)
-
-	// 終了まで待機
-	statusCh, errCh := cli.ContainerWait(ctx, resp.ID, container.WaitConditionNotRunning)
-	select {
-	case err := <-errCh:
-		if err != nil {
-			panic(err)
-		}
-	case <-statusCh:
-		fmt.Println("コンテナ終了")
-	}
 	return nil
 }
