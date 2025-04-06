@@ -12,7 +12,7 @@ import (
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "denv",
-	Short: "即席のDockerコンテナを操作するCLIです。",
+	Short: "This is a CLI to manipulate instant Docker containers.",
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

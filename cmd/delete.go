@@ -6,10 +6,10 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"os/exec"
 
 	"github.com/m-mizutani/goerr"
 	"github.com/spf13/cobra"
+	"github.com/takumi2786/denv/pkg/denv/processors"
 )
 
 // deleteCmd represents the delete command
@@ -22,7 +22,7 @@ var deleteCmd = &cobra.Command{
 			goerr.New("Failed to Parse Command")
 		}
 
-		err = delete(options)
+		err = processors.Delete(options, os.Stdin, os.Stdout, os.Stderr)
 		if err != nil {
 			fmt.Println("Error Occured in run.", err)
 		}
@@ -30,23 +30,13 @@ var deleteCmd = &cobra.Command{
 	},
 }
 
+// init initialize comand line args
 func init() {
 	rootCmd.AddCommand(deleteCmd)
 	deleteCmd.Flags().StringP("identity", "i", "ubuntu", "Docker Image identity defined in image_map.json")
 }
 
-type DeleteOptions struct {
-	ImageMapPath string
-	Identity     string
-}
-
-func (o *DeleteOptions) String() string {
-	return fmt.Sprintf(
-		"DeleteOptions: ImageMapPath: %s, Identity: %s", o.ImageMapPath, o.Identity,
-	)
-}
-
-func parseDeleteCmd(cmd *cobra.Command) (*DeleteOptions, error) {
+func parseDeleteCmd(cmd *cobra.Command) (*processors.DeleteOptions, error) {
 	identity, err := cmd.Flags().GetString("identity")
 	if err != nil {
 		return nil, err
@@ -57,33 +47,8 @@ func parseDeleteCmd(cmd *cobra.Command) (*DeleteOptions, error) {
 		return nil, err
 	}
 
-	return &DeleteOptions{
+	return &processors.DeleteOptions{
 		Identity:     identity,
 		ImageMapPath: filepath,
 	}, err
-}
-
-func delete(options *DeleteOptions) error {
-	if options == nil {
-		return goerr.New("InternalError: options is nil")
-	}
-
-	fmt.Println("Deleting Container...", options)
-
-	// create command
-	exCmd := exec.Command(
-		"docker", "rm", "-f", options.Identity,
-	)
-
-	// 入出力を親プロセスのターミナルにバインド
-	exCmd.Stdin = os.Stdin
-	exCmd.Stdout = os.Stdout
-	exCmd.Stderr = os.Stderr
-
-	// 実行
-	if err := exCmd.Run(); err != nil {
-		fmt.Println("コンテナの削除に失敗:", err)
-	}
-
-	return nil
 }
