@@ -39,4 +39,4 @@ require (
 	gotest.tools/v3 v3.5.2 // indirect
 )
 
-replace github.com/takumi2786/denv => .
+// replace github.com/takumi2786/denv => .
