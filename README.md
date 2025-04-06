@@ -1,6 +1,6 @@
 ## denv
 
-This is CLI tool to create instant docker environment for developping.
+This is CLI tool to create instant docker contanier for developping.
 
 
 ## install
