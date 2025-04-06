@@ -10,6 +10,7 @@ import (
 	"github.com/takumi2786/denv/pkg/denv"
 )
 
+// RunOptions is parameters for RunProcessor
 type RunOptions struct {
 	ImageMapPath string
 	Identity     string
@@ -21,39 +22,61 @@ func (o *RunOptions) String() string {
 	)
 }
 
-func Run(options *RunOptions, stdin *os.File, stdout *os.File, stderr *os.File) error {
+// RunProcessor is Processor to run container
+type RunProcessor struct {
+}
+
+var _ Processor = (*RunProcessor)(nil)
+
+func NewRunProcessor() *RunProcessor {
+	return &RunProcessor{}
+}
+
+// Run deletes selected container
+func (rp *RunProcessor) Run(
+	options any,
+	stdin *os.File,
+	stdout *os.File,
+	stderr *os.File,
+) error {
 	if options == nil {
 		return goerr.New("InternalError: options is nil")
 	}
-	fmt.Println("Starting Container...", options)
+
+	// convert any to RunOptions
+	rOptions, ok := options.(*RunOptions)
+	if !ok {
+		return goerr.New("failed to parse options")
+	}
+
+	fmt.Println("Starting Container...", rOptions)
+
 	reader := denv.NewImageMapReader()
-	err := reader.Read(options.ImageMapPath)
+	err := reader.Read(rOptions.ImageMapPath)
 	if err != nil {
 		return goerr.Wrap(err, "Faled to Parse image map")
 	}
 
-	entry, err := reader.Loadded(options.Identity)
+	entry, err := reader.Loadded(rOptions.Identity)
 	if err != nil {
 		return goerr.Wrap(err, "Faled to Load image map")
 	}
 
-	// args
+	/*
+		Start container
+	*/
 	commandArgs := []string{
 		"run",
 		"-itd",
 		"-v", ".:/Workspace",
-		"--name", options.Identity,
+		"--name", rOptions.Identity,
 		"-w", "/Workspace",
 	}
-	// option
 	commandArgs = append(commandArgs, strings.Split(entry.Option, " ")...)
-	// image uri
 	commandArgs = append(commandArgs, entry.ImageURI)
-	// entrypoint
 	if entry.Entrypoint != "" {
 		commandArgs = append(commandArgs, entry.Entrypoint)
 	}
-	// cmd
 	if entry.Cmd != "" {
 		commandArgs = append(commandArgs, entry.Cmd)
 	}
@@ -63,27 +86,31 @@ func Run(options *RunOptions, stdin *os.File, stdout *os.File, stderr *os.File) 
 		commandArgs...,
 	)
 
-	// 入出力を親プロセスのターミナルにバインド
+	// Bind input/output to parent process terminal
 	exCmdStart.Stdin = stdin
 	exCmdStart.Stdout = stdout
 	exCmdStart.Stderr = stderr
 
-	// 実行
+	// Execute command
 	if err := exCmdStart.Run(); err != nil {
-		fmt.Println("コンテナの起動に失敗:", err)
+		fmt.Println("Failed to Start Container:", err)
 		return err
 	}
 
-	exCmd := exec.Command("docker", "exec", "-it", options.Identity, entry.Shell)
+	/*
+		Attach container
+	*/
 
-	// 入出力を親プロセスのターミナルにバインド
+	exCmd := exec.Command("docker", "exec", "-it", rOptions.Identity, entry.Shell)
+
+	// Bind input/output to parent process terminal
 	exCmd.Stdin = stdin
 	exCmd.Stdout = stdout
 	exCmd.Stderr = stderr
 
-	// 実行
+	// Execute command
 	if err := exCmd.Run(); err != nil {
-		fmt.Println("実行エラー:", err)
+		fmt.Println("Failed to attach container:", err)
 	}
 
 	return nil

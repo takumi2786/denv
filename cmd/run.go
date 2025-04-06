@@ -34,12 +34,17 @@ var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Start Instant Container",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		// logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+
 		options, err := parseRunCmd(cmd)
 		if err != nil {
 			goerr.New("Failed to Parse Command")
 		}
 
-		err = processors.Run(options, os.Stdin, os.Stdout, os.Stderr)
+		// logger.Info("processors.Run")
+
+		processor := processors.NewRunProcessor()
+		err = processor.Run(options, os.Stdin, os.Stdout, os.Stderr)
 		if err != nil {
 			fmt.Println("Error Occured in run.", err)
 		}

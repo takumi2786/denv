@@ -22,7 +22,8 @@ var deleteCmd = &cobra.Command{
 			goerr.New("Failed to Parse Command")
 		}
 
-		err = processors.Delete(options, os.Stdin, os.Stdout, os.Stderr)
+		processor := processors.NewDeleteProcessor()
+		processor.Run(options, os.Stdin, os.Stdout, os.Stderr)
 		if err != nil {
 			fmt.Println("Error Occured in run.", err)
 		}
