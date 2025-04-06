@@ -4,7 +4,7 @@ Copyright © 2025 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
+	"log/slog"
 	"os"
 
 	"github.com/m-mizutani/goerr"
@@ -28,7 +28,7 @@ var deleteCmd = &cobra.Command{
 		processor := processors.NewDeleteProcessor(logger)
 		processor.Run(options, os.Stdin, os.Stdout, os.Stderr)
 		if err != nil {
-			fmt.Println("Error Occured in run.", err)
+			logger.Error("Error Occured in Run.", slog.Any("err", err))
 		}
 		return nil
 	},
