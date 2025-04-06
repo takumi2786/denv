@@ -2,15 +2,25 @@
     {
         "identity": "ubuntu",
         "image_uri": "takumi2786/ubuntu:22.04-jammy-amd64",
-        "option": "-p 8080:8080",
+        "option": "-p 8081:8080",
         "entrypoint": "zsh",
-        "cmd": ""
+        "cmd": "",
+        "shell": "zsh"
     },
     {
         "identity": "python",
         "image_uri": "python:3.10.12-slim-bullseye",
         "option": "-p 8080:8080",
         "entrypoint": "",
-        "cmd": ""
+        "cmd": "",
+        "shell": "bash"
+    },
+    {
+        "identity": "nginx",
+        "image_uri": "nginx:latest",
+        "option": "-p 8089:80",
+        "entrypoint": "",
+        "cmd": "",
+        "shell": "bash"
     }
 ]

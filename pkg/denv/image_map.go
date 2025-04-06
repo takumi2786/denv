@@ -13,6 +13,7 @@ type ImageMapEntry struct {
 	Option     string `json:"option"`
 	Entrypoint string `json:"entrypoint"`
 	Cmd        string `json:"cmd"`
+	Shell      string `json:"shell"`
 }
 
 type ImageMapReader struct {
