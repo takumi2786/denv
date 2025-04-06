@@ -1,19 +1,11 @@
 [
     {
         "identity": "ubuntu",
-        "image_uri": "takumi2786/ubuntu:amd64",
+        "image_uri": "ubuntu:noble-20250127",
         "option": "",
-        "entrypoint": "zsh",
+        "entrypoint": "",
         "cmd": "",
-        "shell": "zsh"
-    },
-    {
-        "identity": "ubuntu-gpu",
-        "image_uri": "takumi2786/ubuntu:cuda-11.8.0-amd64",
-        "option": "--gpus all",
-        "entrypoint": "zsh",
-        "cmd": "",
-        "shell": "zsh"
+        "shell": "bash"
     },
     {
         "identity": "python",

@@ -16,7 +16,7 @@ func TestImageMapReader_Read(t *testing.T) {
 	expectedEntries := map[string]ImageMapEntry{
 		"ubuntu": {
 			Identity:   "ubuntu",
-			ImageURI:   "takumi2786/ubuntu:22.04-jammy-amd64",
+			ImageURI:   "ubuntu:noble-20250127",
 			Option:     "-p 8080:8080",
 			Entrypoint: "",
 			Cmd:        "",
