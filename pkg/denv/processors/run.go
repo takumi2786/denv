@@ -75,7 +75,9 @@ func (rp *RunProcessor) Run(
 		"--name", rOptions.Identity,
 		"-w", "/Workspace",
 	}
-	commandArgs = append(commandArgs, strings.Split(entry.Option, " ")...)
+	if entry.Option != "" {
+		commandArgs = append(commandArgs, strings.Split(entry.Option, " ")...)
+	}
 	commandArgs = append(commandArgs, entry.ImageURI)
 	if entry.Entrypoint != "" {
 		commandArgs = append(commandArgs, entry.Entrypoint)

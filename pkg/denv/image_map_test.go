@@ -20,7 +20,7 @@ func TestImageMapReader_Read(t *testing.T) {
 			Option:     "-p 8080:8080",
 			Entrypoint: "",
 			Cmd:        "",
-			Shell:      "",
+			Shell:      "zsh",
 		},
 		"python": {
 			Identity:   "python",
@@ -28,7 +28,7 @@ func TestImageMapReader_Read(t *testing.T) {
 			Option:     "-p 8080:8080",
 			Entrypoint: "",
 			Cmd:        "",
-			Shell:      "",
+			Shell:      "bash",
 		},
 	}
 

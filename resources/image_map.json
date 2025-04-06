@@ -1,8 +1,16 @@
 [
     {
         "identity": "ubuntu",
-        "image_uri": "takumi2786/ubuntu:22.04-jammy-amd64",
-        "option": "-p 8081:8080",
+        "image_uri": "takumi2786/ubuntu:amd64",
+        "option": "",
+        "entrypoint": "zsh",
+        "cmd": "",
+        "shell": "zsh"
+    },
+    {
+        "identity": "ubuntu-gpu",
+        "image_uri": "takumi2786/ubuntu:cuda-11.8.0-amd64",
+        "option": "--gpus all",
         "entrypoint": "zsh",
         "cmd": "",
         "shell": "zsh"
