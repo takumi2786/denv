@@ -2,6 +2,7 @@ package processors
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"os/exec"
 
@@ -22,12 +23,13 @@ func (o *DeleteOptions) String() string {
 
 // DeleteProcessor is Processor to delete container
 type DeleteProcessor struct {
+	logger *slog.Logger
 }
 
 var _ Processor = (*DeleteProcessor)(nil)
 
-func NewDeleteProcessor() *DeleteProcessor {
-	return &DeleteProcessor{}
+func NewDeleteProcessor(logger *slog.Logger) *DeleteProcessor {
+	return &DeleteProcessor{logger: logger}
 }
 
 // Run deletes selected container
@@ -47,15 +49,15 @@ func (dp *DeleteProcessor) Run(
 		return goerr.New("failed to parse options")
 	}
 
-	fmt.Println("Deleting Container...", dOptions)
+	dp.logger.Info("DeleteProcessor", slog.Any("options", dOptions))
 
+	dp.logger.Info("Deleting Container...")
 	// create command
 	exCmd := exec.Command(
 		"docker", "rm", "-f", dOptions.Identity,
 	)
 
 	// Bind input/output to parent process terminal
-	exCmd.Stdin = stdin
 	exCmd.Stdout = stdout
 	exCmd.Stderr = stderr
 
@@ -64,6 +66,7 @@ func (dp *DeleteProcessor) Run(
 		fmt.Println("Failed to delete container:", err)
 		return err
 	}
+	dp.logger.Info("The Container is Deleted.")
 
 	return nil
 }

@@ -9,6 +9,7 @@ import (
 
 	"github.com/m-mizutani/goerr"
 	"github.com/spf13/cobra"
+	"github.com/takumi2786/denv/pkg/denv"
 	"github.com/takumi2786/denv/pkg/denv/processors"
 )
 
@@ -34,16 +35,14 @@ var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Start Instant Container",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		// logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+		logger := denv.NewLogger()
 
 		options, err := parseRunCmd(cmd)
 		if err != nil {
 			goerr.New("Failed to Parse Command")
 		}
 
-		// logger.Info("processors.Run")
-
-		processor := processors.NewRunProcessor()
+		processor := processors.NewRunProcessor(logger)
 		err = processor.Run(options, os.Stdin, os.Stdout, os.Stderr)
 		if err != nil {
 			fmt.Println("Error Occured in run.", err)

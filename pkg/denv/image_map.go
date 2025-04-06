@@ -24,7 +24,7 @@ func NewImageMapReader() *ImageMapReader {
 	return &ImageMapReader{}
 }
 
-// Read は、ファイルから設定を読み込む。
+// Read read file and parse it as list of ImageMapEntry
 func (imr *ImageMapReader) Read(filePath string) error {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
@@ -36,7 +36,6 @@ func (imr *ImageMapReader) Read(filePath string) error {
 		return err
 	}
 
-	// Identity -> データの形式のMAPで保存
 	imr.entries = make(map[string]ImageMapEntry)
 	for _, entry := range entries {
 		imr.entries[entry.Identity] = entry
@@ -44,7 +43,7 @@ func (imr *ImageMapReader) Read(filePath string) error {
 	return nil
 }
 
-// Loadded は、Identityでentriesを検索し、返します。
+// Loaded search ImageMapEntry by identity
 func (imr *ImageMapReader) Loadded(identity string) (*ImageMapEntry, error) {
 	data, ok := imr.entries[identity]
 	if !ok {

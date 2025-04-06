@@ -2,6 +2,7 @@ package processors
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"os/exec"
 	"strings"
@@ -24,12 +25,13 @@ func (o *RunOptions) String() string {
 
 // RunProcessor is Processor to run container
 type RunProcessor struct {
+	logger *slog.Logger
 }
 
 var _ Processor = (*RunProcessor)(nil)
 
-func NewRunProcessor() *RunProcessor {
-	return &RunProcessor{}
+func NewRunProcessor(logger *slog.Logger) *RunProcessor {
+	return &RunProcessor{logger}
 }
 
 // Run deletes selected container
@@ -49,7 +51,7 @@ func (rp *RunProcessor) Run(
 		return goerr.New("failed to parse options")
 	}
 
-	fmt.Println("Starting Container...", rOptions)
+	rp.logger.Info("RunProcessor", slog.Any("options", rOptions))
 
 	reader := denv.NewImageMapReader()
 	err := reader.Read(rOptions.ImageMapPath)
@@ -65,6 +67,7 @@ func (rp *RunProcessor) Run(
 	/*
 		Start container
 	*/
+	rp.logger.Info("Starting Container...")
 	commandArgs := []string{
 		"run",
 		"-itd",
@@ -87,20 +90,19 @@ func (rp *RunProcessor) Run(
 	)
 
 	// Bind input/output to parent process terminal
-	exCmdStart.Stdin = stdin
 	exCmdStart.Stdout = stdout
 	exCmdStart.Stderr = stderr
 
 	// Execute command
 	if err := exCmdStart.Run(); err != nil {
-		fmt.Println("Failed to Start Container:", err)
+		rp.logger.Error("Failed to Start Container:", slog.Any("error", err))
 		return err
 	}
 
 	/*
 		Attach container
 	*/
-
+	rp.logger.Info("Attaching Container...")
 	exCmd := exec.Command("docker", "exec", "-it", rOptions.Identity, entry.Shell)
 
 	// Bind input/output to parent process terminal
@@ -110,7 +112,7 @@ func (rp *RunProcessor) Run(
 
 	// Execute command
 	if err := exCmd.Run(); err != nil {
-		fmt.Println("Failed to attach container:", err)
+		rp.logger.Error("Failed to attach container", slog.Any("error", err))
 	}
 
 	return nil

@@ -9,6 +9,7 @@ import (
 
 	"github.com/m-mizutani/goerr"
 	"github.com/spf13/cobra"
+	"github.com/takumi2786/denv/pkg/denv"
 	"github.com/takumi2786/denv/pkg/denv/processors"
 )
 
@@ -17,12 +18,14 @@ var deleteCmd = &cobra.Command{
 	Use:   "delete",
 	Short: "Delete selected container",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		logger := denv.NewLogger()
+
 		options, err := parseDeleteCmd(cmd)
 		if err != nil {
 			goerr.New("Failed to Parse Command")
 		}
 
-		processor := processors.NewDeleteProcessor()
+		processor := processors.NewDeleteProcessor(logger)
 		processor.Run(options, os.Stdin, os.Stdout, os.Stderr)
 		if err != nil {
 			fmt.Println("Error Occured in run.", err)
